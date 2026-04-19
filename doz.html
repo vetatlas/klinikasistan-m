@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doz Hesaplayıcı - VetAsistan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen">
+
+  <!-- Premium Header -->
+  <header class="bg-slate-900 border-b border-slate-700 py-5 px-8 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-paw text-4xl text-cyan-400"></i>
+      <h1 class="text-3xl font-bold tracking-tight">VetAsistan</h1>
+    </div>
+    
+    <div class="flex items-center gap-8">
+      <a href="dashboard.html" class="hover:text-cyan-400 transition">Ana Sayfa</a>
+      <a href="doz.html" class="text-cyan-400 font-medium">Doz Hesaplayıcı</a>
+      <a href="recete.html" class="hover:text-cyan-400 transition">Reçete</a>
+      <a href="notlar.html" class="hover:text-cyan-400 transition">Notlar</a>
+      <a href="tani.html" class="hover:text-cyan-400 transition">Tanı</a>
+      
+      <button onclick="logout()" 
+              class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2.5 rounded-2xl transition">
+        <i class="fas fa-sign-out-alt"></i> Çıkış
+      </button>
+    </div>
+  </header>
+
+  <div class="max-w-3xl mx-auto pt-12 px-6">
+    <div class="mb-10">
+      <h1 class="text-4xl font-bold mb-2">Doz Hesaplayıcı</h1>
+      <p class="text-slate-400">Sahada hızlı ve doğru doz hesabı yap</p>
+    </div>
+
+    <div class="card p-10 shadow-2xl">
+      <!-- Form -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Hayvan Türü</label>
+          <select id="tur" class="w-full bg-slate-900 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+            <option value="">Hayvan seçiniz</option>
+            <option value="Kedi">Kedi</option>
+            <option value="Köpek">Köpek</option>
+            <option value="At">At</option>
+            <option value="İnek">İnek</option>
+            <option value="Koyun">Koyun</option>
+            <option value="Tavuk">Tavuk</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Ağırlık (kg)</label>
+          <input type="number" id="agirlik" step="0.1" placeholder="15.5" 
+                 class="w-full bg-slate-900 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <label class="block text-sm text-slate-400 mb-2">İlaç Adı</label>
+        <input type="text" id="ilac" placeholder="Örn: Enrofloxacin, Amoksisilin" 
+               class="w-full bg-slate-900 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+      </div>
+
+      <div class="grid grid-cols-2 gap-6 mt-6">
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Doz (mg/kg)</label>
+          <input type="number" id="doz_mg" step="0.01" placeholder="10" 
+                 class="w-full bg-slate-900 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Günlük Kaç Defa?</label>
+          <input type="number" id="gunluk_doz" value="2" 
+                 class="w-full bg-slate-900 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+        </div>
+      </div>
+
+      <button onclick="hesaplaDoz()" 
+              class="w-full mt-10 bg-gradient-to-r from-cyan-400 to-teal-400 text-slate-950 font-semibold py-5 rounded-3xl text-lg hover:scale-105 transition-all active:scale-95">
+        <i class="fas fa-calculator mr-2"></i>
+        HESAPLA
+      </button>
+
+      <div id="sonuc" class="hidden mt-8 bg-slate-900/70 border border-cyan-400/30 rounded-3xl p-8"></div>
+    </div>
+  </div>
+
+  <!-- Premium Uyarı Modal -->
+  <div id="alertModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
+    <div class="bg-slate-900 border border-slate-700 rounded-3xl p-8 max-w-sm w-full mx-4 text-center">
+      <div id="alertIcon" class="text-5xl mb-4"></div>
+      <h3 id="alertTitle" class="text-2xl font-semibold mb-2"></h3>
+      <p id="alertMessage" class="text-slate-400 mb-8"></p>
+      <button onclick="closeAlert()" 
+              class="bg-cyan-400 text-slate-950 px-10 py-3.5 rounded-2xl font-semibold hover:bg-cyan-300 transition">
+        Tamam
+      </button>
+    </div>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    function showAlert(message, type = "error") {
+      const modal = document.getElementById('alertModal');
+      const icon = document.getElementById('alertIcon');
+      const title = document.getElementById('alertTitle');
+      const msg = document.getElementById('alertMessage');
+
+      if (type === "success") {
+        icon.innerHTML = '✅';
+        icon.className = 'text-5xl mb-4 text-emerald-400';
+        title.textContent = 'Başarılı';
+        title.className = 'text-2xl font-semibold mb-2 text-emerald-400';
+      } else {
+        icon.innerHTML = '⚠️';
+        icon.className = 'text-5xl mb-4 text-amber-400';
+        title.textContent = 'Uyarı';
+        title.className = 'text-2xl font-semibold mb-2 text-amber-400';
+      }
+
+      msg.textContent = message;
+      modal.classList.remove('hidden');
+    }
+
+    function closeAlert() {
+      document.getElementById('alertModal').classList.add('hidden');
+    }
+
+    function hesaplaDoz() {
+      const tur = document.getElementById('tur').value;
+      const agirlik = parseFloat(document.getElementById('agirlik').value);
+      const ilac = document.getElementById('ilac').value.trim();
+      const doz_mg = parseFloat(document.getElementById('doz_mg').value);
+      const gunluk = parseFloat(document.getElementById('gunluk_doz').value) || 1;
+
+      if (!agirlik || !doz_mg || !ilac) {
+        showAlert("Lütfen ağırlık, ilaç adı ve doz bilgilerini doldurun!", "error");
+        return;
+      }
+
+      const toplam_mg = (agirlik * doz_mg).toFixed(2);
+      const bir_sefer = (toplam_mg / gunluk).toFixed(2);
+
+      const sonucDiv = document.getElementById('sonuc');
+      sonucDiv.classList.remove('hidden');
+      sonucDiv.innerHTML = `
+        <h3 class="text-xl font-semibold text-cyan-400 mb-6 flex items-center gap-2">
+          <i class="fas fa-check-circle"></i> Hesaplama Sonucu
+        </h3>
+        <div class="space-y-4 text-lg">
+          <p><span class="text-slate-400">Hayvan:</span> <strong>${tur || 'Belirtilmedi'}</strong> - ${agirlik} kg</p>
+          <p><span class="text-slate-400">İlaç:</span> <strong>${ilac}</strong></p>
+          <p class="text-3xl font-bold text-white pt-4">${toplam_mg} mg <span class="text-base font-normal text-slate-400">/ gün</span></p>
+          <p class="text-2xl"><span class="text-slate-400">Bir defada:</span> <strong>${bir_sefer} mg</strong></p>
+        </div>
+        
+        <button onclick="kaydetDoz()" 
+                class="mt-8 w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-3xl font-semibold transition">
+          Bu Hesabı Kaydet
+        </button>
+      `;
+    }
+
+    function kaydetDoz() {
+      showAlert("Hesap başarıyla kaydedildi! (Henüz veritabanı bağlantısı eklenmedi)", "success");
+    }
+
+    function logout() {
+      auth.signOut().then(() => window.location.href = "index.html");
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (!user) window.location.href = "index.html";
+    });
+  </script>
+</body>
+</html>

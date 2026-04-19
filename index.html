@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VetAsistan</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen flex items-center justify-center relative overflow-hidden">
+  
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,#22d3ee_0%,transparent_60%)] opacity-10"></div>
+
+  <div class="relative z-10 text-center px-6 max-w-lg">
+    <div class="mb-8 flex justify-center">
+      <div class="w-28 h-28 bg-cyan-500/10 rounded-3xl flex items-center justify-center border border-cyan-400/30 backdrop-blur-sm">
+        <i class="fas fa-paw text-7xl text-cyan-400"></i>
+      </div>
+    </div>
+
+    <h1 class="text-7xl font-bold tracking-tighter mb-4">
+      Vet<span class="text-cyan-400">Asistan</span>
+    </h1>
+    
+    <p class="text-2xl text-slate-400 mb-10">Kişisel Veteriner Asistanın</p>
+
+    <a href="login.html" 
+       class="block w-full bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-400 text-slate-950 font-bold text-2xl py-7 rounded-3xl hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-cyan-500/40">
+      Giriş Yap
+    </a>
+
+    <div class="mt-12 grid grid-cols-3 gap-6 text-sm text-slate-400">
+      <div class="flex flex-col items-center">
+        <i class="fas fa-book text-3xl mb-2 text-amber-400"></i>
+        <span>Ders Notları</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <i class="fas fa-calculator text-3xl mb-2 text-cyan-400"></i>
+        <span>Doz Hesabı</span>
+      </div>
+      <div class="flex flex-col items-center">
+        <i class="fas fa-file-prescription text-3xl mb-2 text-emerald-400"></i>
+        <span>Reçete</span>
+      </div>
+    </div>
+
+    <p class="text-xs text-slate-600 mt-16">Sadece senin için • Tamamen kişisel</p>
+  </div>
+
+  <script src="js/firebase-config.js"></script>
+  <script>
+    auth.onAuthStateChanged((user) => {
+      if (user) window.location.href = "dashboard.html";
+    });
+  </script>
+</body>
+</html>

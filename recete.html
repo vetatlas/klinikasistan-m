@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reçete Oluştur - VetAsistan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Firebase SDK'lar -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen">
+
+  <header class="bg-slate-900 border-b border-slate-700 py-5 px-8 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-paw text-4xl text-cyan-400"></i>
+      <h1 class="text-3xl font-bold tracking-tight">VetAsistan</h1>
+    </div>
+    
+    <div class="flex items-center gap-8">
+      <a href="dashboard.html" class="hover:text-cyan-400 transition">Ana Sayfa</a>
+      <a href="doz.html" class="hover:text-cyan-400 transition">Doz</a>
+      <a href="recete.html" class="text-cyan-400 font-medium">Reçete</a>
+      <a href="notlar.html" class="hover:text-cyan-400 transition">Notlar</a>
+      <a href="tani.html" class="hover:text-cyan-400 transition">Tanı</a>
+      
+      <button onclick="cikisYap()" class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2.5 rounded-2xl transition">
+        <i class="fas fa-sign-out-alt"></i> Çıkış
+      </button>
+    </div>
+  </header>
+
+  <div class="max-w-4xl mx-auto pt-12 px-6">
+    <h1 class="text-4xl font-bold mb-2">Reçete Oluştur</h1>
+    <p class="text-slate-400 mb-10">Resmi görünümlü profesyonel reçete</p>
+
+    <div class="bg-slate-900/70 border border-slate-700 rounded-3xl p-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Hasta Sahibi Adı</label>
+          <input type="text" id="sahip" placeholder="Ahmet Yılmaz" class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Hayvan Adı ve Türü</label>
+          <input type="text" id="hayvan" placeholder="Max - 4 Yaşında Golden Retriever" class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <label class="block text-sm text-slate-400 mb-2">İlaçlar, Doz ve Süre</label>
+        <textarea id="ilaclar" rows="7" placeholder="• Amoksisilin 500 mg tablet - Günde 2 defa (10 gün)&#10;• Meloksikam %0.5 enjeksiyon - Günde 1 defa (5 gün)" 
+                  class="w-full bg-slate-800 border border-slate-600 rounded-3xl px-5 py-4 focus:border-cyan-400 outline-none"></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6 mt-6">
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Tarih</label>
+          <input type="date" id="tarih" class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-400 mb-2">Ek Talimat</label>
+          <input type="text" id="talimat" placeholder="Yemekten sonra veriniz, bol su ile" 
+                 class="w-full bg-slate-800 border border-slate-600 rounded-2xl px-5 py-4 focus:border-cyan-400 outline-none">
+        </div>
+      </div>
+
+      <button onclick="recetePDF()" 
+              class="w-full mt-10 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold py-5 rounded-3xl text-lg hover:scale-105 transition-all active:scale-95 flex items-center justify-center gap-3">
+        <i class="fas fa-file-pdf text-xl"></i>
+        REÇETEYİ PDF OLARAK İNDİR
+      </button>
+    </div>
+  </div>
+
+  <div id="alertModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 32px; max-width: 400px; width: 90%; text-align: center;">
+      <div id="alertIcon" style="font-size: 48px; margin-bottom: 16px;"></div>
+      <h3 id="alertTitle" style="font-size: 24px; font-weight: 600; margin-bottom: 8px;"></h3>
+      <p id="alertMessage" style="color: #94a3b8; margin-bottom: 32px;"></p>
+      <button onclick="document.getElementById('alertModal').style.display='none'" 
+              style="background: #22d3ee; color: #0f172a; padding: 14px 40px; border-radius: 16px; font-weight: 600;">
+        Tamam
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Firebase başlat
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1UKnJ7BuN3EkYTQi4T4Il5ctLDGwDY0A",
+      authDomain: "vetasistan-6fdeb.firebaseapp.com",
+      projectId: "vetasistan-6fdeb",
+      storageBucket: "vetasistan-6fdeb.firebasestorage.app",
+      messagingSenderId: "137402648793",
+      appId: "1:137402648793:web:0826d5819755a23f77d6c8"
+    };
+
+    // Firebase başlat
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Sayfa koruması
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.replace("index.html");
+      }
+    });
+
+    // Çıkış fonksiyonu
+    window.cikisYap = function() {
+      auth.signOut().then(() => {
+        window.location.replace("index.html");
+      });
+    };
+
+    // Tarihi ayarla
+    document.getElementById('tarih').value = new Date().toISOString().slice(0,10);
+
+    // Alert gösterme
+    function showAlert(message, type) {
+      const modal = document.getElementById('alertModal');
+      const icon = document.getElementById('alertIcon');
+      const title = document.getElementById('alertTitle');
+      const msg = document.getElementById('alertMessage');
+
+      if (type === "success") {
+        icon.innerHTML = '✅';
+        title.textContent = 'Başarılı';
+        title.style.color = '#10b981';
+        icon.style.color = '#10b981';
+      } else {
+        icon.innerHTML = '⚠️';
+        title.textContent = 'Uyarı';
+        title.style.color = '#f59e0b';
+        icon.style.color = '#f59e0b';
+      }
+      msg.textContent = message;
+      modal.style.display = 'flex';
+    }
+
+    // Reçete PDF oluştur
+    window.recetePDF = function() {
+      const sahip = document.getElementById('sahip').value.trim();
+      const hayvan = document.getElementById('hayvan').value.trim();
+      const ilaclar = document.getElementById('ilaclar').value.trim();
+      const tarih = document.getElementById('tarih').value || new Date().toLocaleDateString('tr-TR');
+      const talimat = document.getElementById('talimat').value.trim();
+
+      if (!sahip || !hayvan || !ilaclar) {
+        showAlert("Lütfen hasta sahibi, hayvan bilgisi ve ilaçları doldurun!", "error");
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Reçete - ${sahip}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; line-height: 1.6; }
+            h1 { color: #006699; text-align: center; }
+            hr { border: 2px solid #006699; margin: 20px 0; }
+            .section { margin-top: 30px; }
+            .section h2 { color: #006699; font-size: 18px; }
+            .signature { margin-top: 80px; text-align: right; border-top: 1px solid black; padding-top: 10px; width: 250px; margin-left: auto; }
+            .footer { margin-top: 60px; text-align: center; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <h1>VETERİNER REÇETE</h1>
+          <p style="text-align: center;">Veteriner Hekim Adayı<br><strong>Abdullah</strong></p>
+          <hr>
+          <p><strong>Tarih:</strong> ${tarih}</p>
+          <p><strong>Hasta Sahibi:</strong> ${sahip}</p>
+          <p><strong>Hayvan:</strong> ${hayvan}</p>
+          
+          <div class="section">
+            <h2>İlaçlar ve Kullanım Şekli:</h2>
+            <div>${ilaclar.replace(/\n/g, '<br>')}</div>
+          </div>
+          
+          ${talimat ? `<div class="section"><h2>Özel Talimat:</h2><div>${talimat}</div></div>` : ''}
+          
+          <div class="signature">
+            <strong>Veteriner Hekim</strong><br>
+            Abdullah
+          </div>
+          
+          <div class="footer">
+            Bu reçete bilgilendirme amaçlıdır.
+          </div>
+        </body>
+        </html>
+      `);
+      
+      printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+        showAlert("Yazdırma penceresi açıldı. 'PDF olarak kaydet' seçeneğini kullanın.", "success");
+      }, 500);
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VetAsistan - Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-700 py-5 px-6 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-paw text-4xl text-cyan-400"></i>
+      <h1 class="text-3xl font-bold tracking-tight">VetAsistan</h1>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <span class="text-sm text-slate-400 hidden md:block">Hoş geldin, Abdullah</span>
+      <button onclick="logout()" 
+              class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-3 rounded-2xl transition text-sm font-medium">
+        <i class="fas fa-sign-out-alt"></i>
+        Çıkış
+      </button>
+    </div>
+  </header>
+
+  <div class="p-6 max-w-6xl mx-auto">
+    <div class="mb-10">
+      <h1 class="text-5xl font-bold tracking-tight mb-2">Hoş geldin! 👋</h1>
+      <p class="text-xl text-slate-400">Bugün ne yapmak istersin?</p>
+    </div>
+
+    <!-- Ana Kartlar -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <div onclick="window.location.href='doz.html'" 
+           class="bg-slate-900 border border-slate-700 hover:border-cyan-400 rounded-3xl p-8 transition-all hover:scale-105 cursor-pointer group">
+        <div class="w-16 h-16 bg-cyan-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-cyan-500/20 transition">
+          <i class="fas fa-calculator text-4xl text-cyan-400"></i>
+        </div>
+        <h3 class="text-2xl font-semibold mb-2">Doz Hesaplayıcı</h3>
+        <p class="text-slate-400">Hızlı ve doğru doz hesabı yap</p>
+      </div>
+
+      <div onclick="window.location.href='recete.html'" 
+           class="bg-slate-900 border border-slate-700 hover:border-emerald-400 rounded-3xl p-8 transition-all hover:scale-105 cursor-pointer group">
+        <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition">
+          <i class="fas fa-file-prescription text-4xl text-emerald-400"></i>
+        </div>
+        <h3 class="text-2xl font-semibold mb-2">Reçete Oluştur</h3>
+        <p class="text-slate-400">Profesyonel PDF reçete hazırla</p>
+      </div>
+
+      <div onclick="window.location.href='notlar.html'" 
+           class="bg-slate-900 border border-slate-700 hover:border-amber-400 rounded-3xl p-8 transition-all hover:scale-105 cursor-pointer group">
+        <div class="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-amber-500/20 transition">
+          <i class="fas fa-note-sticky text-4xl text-amber-400"></i>
+        </div>
+        <h3 class="text-2xl font-semibold mb-2">Ders Notlarım</h3>
+        <p class="text-slate-400">Notlarını kaydet ve düzenle</p>
+      </div>
+
+      <div onclick="window.location.href='tani.html'" 
+           class="bg-slate-900 border border-slate-700 hover:border-purple-400 rounded-3xl p-8 transition-all hover:scale-105 cursor-pointer group">
+        <div class="w-16 h-16 bg-purple-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-500/20 transition">
+          <i class="fas fa-stethoscope text-4xl text-purple-400"></i>
+        </div>
+        <h3 class="text-2xl font-semibold mb-2">Semptom → Tanı</h3>
+        <p class="text-slate-400">Hızlı tanı yardımı al</p>
+      </div>
+    </div>
+
+    <!-- Son İşlemler Alanı (Şimdilik boş) -->
+    <div class="mt-12">
+      <h2 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+        <i class="fas fa-history"></i>
+        Son İşlemler
+      </h2>
+      <div class="bg-slate-900 border border-slate-700 rounded-3xl p-10 text-center">
+        <p class="text-slate-500">Henüz işlem yapılmadı...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Önce Firebase kütüphaneleri (zaten head içinde var) -->
+  <!-- Sonra config ve auth -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Dashboard kontrolü
+    if (auth) {
+      auth.onAuthStateChanged((user) => {
+        if (!user) window.location.replace("index.html");
+      });
+    }
+  </script>
+</body>
+</html>
